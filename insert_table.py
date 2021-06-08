@@ -2,19 +2,19 @@ import psycopg2
 from config import config
 import random
 from datetime import datetime
+from faker import Faker
 
-lst_bank = ['Banamex', 'Bancomer', 'Scotiabank', "American Express"]
-lst_city_bank = ['Tijuana', 'CDMX', 'Monterry', "Puebla"]
-lst_city_costumer = ['Chiapas', 'CDMX', 'Tabasco', "Puebla"]
-lst_address = ['Concepcion street', 'Street 9', 'Liberty Street', "Park New Street"]
+lst_bank = ['Banamex', 'Bancomer', 'Scotiabank',
+            "American Express", 'Inbursa', 'Banco Azteca', 'Banorte']
+fake = Faker('es-Mx')
 
 
 def insert_tables(**kwargs):
 
     sql = {
 
-        "bank": " INSERT INTO bank(bank_name, city, address, aperture_date) VALUES (%s, %s, %s, %s)",
-        "costumer": " INSERT INTO customer(name, address, bank_name, city, aperture_date, bank_code) VALUES (%s, %s,%s,%s, %s, %s) "
+        "bank": 'INSERT INTO bank(id, bank_name, city, address, aperture_date) VALUES ({})'.format(','.join(['%s']*5)),
+        "client": 'INSERT INTO client(first_name, address, city, aperture_date, bank_code, last_name) VALUES ({})'.format(','.join(['%s']*6))
     }
 
     conn = None
@@ -29,46 +29,61 @@ def insert_tables(**kwargs):
         for kw in kwargs.keys():
             if kw == 'bank':
                 bank = kwargs[kw]
-                # print(bank['bank_name'], sql[kw])
-                cur.exectutemany(sql[kw],bank['bank_name'], bank['city'], bank['address'], bank['aperture_date'])
-            if kw == 'costumer':
-                costumer = kwargs[kw]
-                # print('-'*40)
-                # print(costumer, sql[kw])
-                cur.exectutemany(sql[kw],costumer['bank_name'], costumer['city'], costumer['address'], costumer['aperture_date'])
+                # print(bank, sql[kw])
+                cur.executemany(sql[kw],bank)
+            if kw == 'client':
+                client = kwargs[kw]
+                
+                cur.executemany(sql[kw], client)
 
-        con.commit()
+        conn.commit()
         cur.close()
-    
-    except(Exception, psycopg2.DatabaseError) as error: 
-        print(error)
-    finally: 
-        if conn is not None: 
+
+    except(Exception, psycopg2.DatabaseError) as error:
+        print('Reason: ',error)
+    finally:
+        if conn is not None:
             conn.close()
-            print('Conexión cerrada') 
-
-
-
-
-
-
-
-
-
-
+            print('Closed connection')
 
 
 if __name__ == '__main__':
-    data = {}
-    bank = {}
-    for x in range(1, 4): 
-        
-        bank['bank_name'] = random.choice(lst_bank)
-        bank['city'] = random.choice(lst_city_bank)
-        bank['address'] = random.choice(lst_address)
-        bank['aperture_date'] = datetime.now()
-    
-    data.update(bank)
-    print(data)
+    bank = []
+    client = []
 
-    # insert_tables(**data)
+    data = {'bank': (),
+            'client': ()
+            }
+    id_bank = []
+    city_bank = []
+    for x in range(0, len(lst_bank)):
+        tup_bank = ()
+
+        id_bank.append(str(x+1))
+        tup_bank += tuple([id_bank[x]])
+        tup_bank += tuple([str(lst_bank[x])])
+        tup_bank += tuple([fake.state()])
+        tup_bank += tuple([','.join(fake.street_address())])
+        tup_bank += tuple([datetime.now()])
+        bank.append(tup_bank)
+    for id in range(0, len(id_bank)):
+        for person in range(10):
+            tup_costumer = ()
+            tup_costumer += tuple([fake.first_name()])
+            tup_costumer += tuple([fake.street_address()])
+            tup_costumer += tuple([fake.state()])
+            year = random.randint(1999, 2021)
+            month = random.randint(1, 12)
+            day = random.randint(1, 28)
+            aperture = '{}-{:02d}-{:02d}'.format(year,month,day)
+            tup_costumer += tuple([str(aperture)])
+            tup_costumer += tuple([random.choice(id_bank)])
+            tup_costumer += tuple([fake.last_name()])
+            client.append(tup_costumer)
+            # print(aperture)
+    
+    data['bank'] = bank
+    data['client'] = client
+    # print(data)
+    
+    insert_tables(**data)
