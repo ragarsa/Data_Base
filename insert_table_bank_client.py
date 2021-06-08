@@ -63,7 +63,7 @@ if __name__ == '__main__':
         tup_bank += tuple([id_bank[x]])
         tup_bank += tuple([str(lst_bank[x])])
         tup_bank += tuple([fake.state()])
-        tup_bank += tuple([','.join(fake.street_address())])
+        tup_bank += tuple([fake.street_address()])
         tup_bank += tuple([datetime.now()])
         bank.append(tup_bank)
     for id in range(0, len(id_bank)):
