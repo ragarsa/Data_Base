@@ -57,15 +57,15 @@ if __name__ == '__main__':
     id_bank = []
     city_bank = []
     for x in range(0, len(lst_bank)):
-        tup_bank = ()
+        tup_bank = []
 
         id_bank.append(str(x+1))
-        tup_bank += tuple([id_bank[x]])
-        tup_bank += tuple([str(lst_bank[x])])
-        tup_bank += tuple([fake.state()])
-        tup_bank += tuple([fake.street_address()])
-        tup_bank += tuple([datetime.now()])
-        bank.append(tup_bank)
+        tup_bank.append(id_bank[x])
+        tup_bank.append(str(lst_bank[x]))
+        tup_bank.append(fake.state())
+        tup_bank.append(fake.street_address())
+        tup_bank.append(datetime.now())
+        bank.append(tuple(tup_bank))
     for id in range(0, len(id_bank)):
         for person in range(10):
             tup_costumer = ()
@@ -84,6 +84,9 @@ if __name__ == '__main__':
     
     data['bank'] = bank
     data['client'] = client
-    # print(data)
+    print(data)
     
-    insert_tables(**data)
+    # insert_tables(**data)
+
+
+
